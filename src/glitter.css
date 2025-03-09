@@ -1,14 +1,1 @@
-.confetti {
-    position: absolute;
-    top: 10;
-    left: 20;
-    width: 60%; /* Fit inside chatbot container */
-    height: 60%; /* Cover only chatbot area */
-    background-image: url("C:/Users/CSE RGUKT/helpdesk-assistant/knightvision/src/congratulations-7600.gif");
-    background-size: contain; /* Keep the aspect ratio */
-    background-repeat: no-repeat;
-    background-position: center;
-    pointer-events: none;
-    z-index: 10; /* Ensure it stays above chatbot messages */
-    opacity: 0.8; /* Slight transparency */
-}
+
