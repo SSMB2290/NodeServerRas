@@ -35,7 +35,7 @@ app.post('/login', async (req, res) => {
 
   // Check if user exists
   const user = await User.findOne({ teckzite_id:teckziteId,password:password});
-  console.log(user);
+  console.log("The user details are:"+user);
   if (!user) {
     return res.status(400).json({ message: 'Invalid credentials' });
   }
