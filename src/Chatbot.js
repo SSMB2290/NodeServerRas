@@ -34,7 +34,7 @@ const Chatbot = () => {
     if (!teckziteId) return;
 
     try {
-      const response = await fetch("http://localhost:5000/get-user-details", {
+      const response = await fetch("https://react-rasa-3.onrender.com/get-user-details", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ teckzite_id: teckziteId }),
