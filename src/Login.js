@@ -25,7 +25,7 @@ function Login() {
     setError(''); // Reset any previous error message
 
     try {
-      const response = await axios.post('http://localhost:5000/login', { teckziteId, password });
+      const response = await axios.post('https://react-rasa-3.onrender.com/login', { teckziteId, password });
       console.log('Login Success:', response.data);
 
       // Store token (optional)
