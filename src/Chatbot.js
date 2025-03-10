@@ -159,7 +159,8 @@ const generateTechZiteResponse = async (userQuery, additionalContext, userDetail
       
         // Remove markdown bold/italics (`**bold**`, `*italic*`)
         let formattedText = response.replace(/(\*\*|\*)/g, "");
-      
+
+        console.log("formatted response"+formattedText);
       
         return formattedText;
       };
