@@ -2,8 +2,8 @@ import React, { useState, useEffect } from "react";
 import { FaCalendarAlt, FaMoon, FaStore, FaClipboardList, FaLaptopCode, FaLightbulb, FaTrophy, FaMapMarkerAlt } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import "./glitter.css";
-
-const GEMINI_API_KEY = "AIzaSyAMEQ_c9hqT2xC8E9vWZJIB62PebLHzS2s";// Use REACT_APP_ prefix for Create React App
+import MapComponent from './MapComponent';
+  const GEMINI_API_KEY = "AIzaSyAMEQ_c9hqT2xC8E9vWZJIB62PebLHzS2s";// Use REACT_APP_ prefix for Create React App
 const Chatbot = () => {
   const [messages, setMessages] = useState([{ text: "Hello! How can I assist you?", sender: "bot" }]);
   const [userInput, setUserInput] = useState("");
@@ -158,20 +158,26 @@ console.log(finalPrompt);
       <div style={styles.container}>
         {showConfetti && <div className="confetti"></div>}
 
-        <div style={styles.buttonContainer}>
-          {Object.entries(predefinedMessages).map(([key, value]) => (
-            <button key={key} style={styles.quickButton} onClick={() => sendMessage(value)}>
-              {key === "Events" && <FaCalendarAlt />}
-              {key === "Theme" && <FaMoon />}
-              {key === "Sponsors" && <FaStore />}
-              {key === "registrations" && <FaClipboardList />}
-              {key === "workshops" && <FaLightbulb />}
-              {key === "hackathons" && <FaLaptopCode />}
-              {key === "MegaExpo" && <FaTrophy />}
-              {key.charAt(0).toUpperCase() + key.slice(1)}
-            </button>
-          ))}
-        </div>
+       <div style={styles.buttonContainer}>
+  {Object.entries(predefinedMessages).map(([key, value]) => (
+    <button key={key} style={styles.quickButton} onClick={() => sendMessage(value)}>
+      {key === "Events" && <FaCalendarAlt />}
+      {key === "Theme" && <FaMoon />}
+      {key === "Sponsors" && <FaStore />}
+      {key === "registrations" && <FaClipboardList />}
+      {key === "workshops" && <FaLightbulb />}
+      {key === "hackathons" && <FaLaptopCode />}
+      {key === "MegaExpo" && <FaTrophy />}
+      {key.charAt(0).toUpperCase() + key.slice(1)}
+    </button>
+  ))}
+
+  {/* New "Show Event Map" Button */}
+  <button style={styles.quickButton} onClick={() => navigate('/map')}>
+    <FaMapMarkerAlt /> Show Event Map
+  </button>
+</div>
+
 
         <div style={styles.chatBox}>
           {messages.map((msg, index) => (
