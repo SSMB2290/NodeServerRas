@@ -55,65 +55,70 @@ const Chatbot = () => {
 
   const generateTechZiteResponse = async (userQuery, additionalContext) => {
     if (!GEMINI_API_KEY) return "⚠️ API key missing.";
-
-    // Always fetch the latest teckzite_id from localStorage
-    let teckziteId = localStorage.getItem("teckzite_id") || null;
-
-    // Ensure user-specific chat history exists
+  
+    // ✅ Always fetch the latest teckzite_id from localStorage
+    const teckziteId = localStorage.getItem("teckzite_id") || null;
+  
+    // ✅ Ensure user-specific chat history exists
     if (!teckziteId) {
       return "❌ Sorry, you are not logged in. Please log in to continue.";
     }
-
+  
     if (!chatHistory.has(teckziteId)) {
       chatHistory.set(teckziteId, []);
     }
-
+  
     let previousChats = chatHistory.get(teckziteId) || [];
-
-    // Store only the last 10 messages
+  
+    // ✅ Store only the last 10 messages (corrected trimming order)
     if (previousChats.length > 10) {
       previousChats = previousChats.slice(-10);
-      chatHistory.set(teckziteId, previousChats);
     }
-
-  const formattedChatHistory = previousChats.length > 0
-  ? previousChats.map(chat => chat?.response || "").join("\n")  // Extract response text
-  : "No previous conversation.";
-
-
-    console.log(formattedChatHistory);
-
-    // Detect greeting queries
+  
+    chatHistory.set(teckziteId, previousChats);
+  
+    // ✅ Correctly extract bot responses from chat history
+    const formattedChatHistory = previousChats.length > 0
+      ? previousChats.map(chat => chat.bot || "").join("\n")  // Extract only bot responses
+      : "No previous conversation.";
+  
+    console.log("🔹 Chat History Sent to Gemini:", formattedChatHistory);
+  
+    // ✅ Detect greeting queries
     const lowerQuery = userQuery.toLowerCase();
     const isGreeting = ["hi", "hello", "hey"].some(greet => lowerQuery.includes(greet));
-
-    // Properly respond to greetings (with stored response if asked before)
+  
+    // ✅ Properly respond to greetings
     let greetingResponse = `Hi ${teckziteId}, I am here to assist you!`;
-
+  
     if (isGreeting) {
       const lastUserMessage = previousChats.length > 0 ? previousChats[previousChats.length - 1].user.toLowerCase() : "";
       if (lastUserMessage === lowerQuery) {
-        return previousChats[previousChats.length - 1].bot; // Return cached response
+        return previousChats[previousChats.length - 1].bot; // ✅ Return cached response for repeated greetings
       }
+  
+      // ✅ Store greeting response correctly
       previousChats.push({ user: userQuery, bot: greetingResponse });
-      chatHistory.set(teckziteId, previousChats);
+      chatHistory.set(teckziteId, previousChats.slice(-10)); // ✅ Trim **after** adding the new response
       return greetingResponse;
     }
-
-    // Construct the final prompt for Gemini API
+  
+    // ✅ Construct the final prompt for Gemini API
     const finalPrompt = `
       You are TechZiteBot, an assistant for TechZite 2025.
       User Query: ${userQuery}
       Context: ${additionalContext}
       Previous Chats: ${formattedChatHistory}
       User Info: Teckzite ID: ${teckziteId}
-
+  
       Instructions:
       - If the user greets, respond with: "Hi ${teckziteId}, I am here to assist you!"
       - If the same query was asked before, return the same response from history.
       - Avoid unnecessary name repetition.
     `;
-
+  
+    console.log("🔹 Final Prompt Sent to Gemini:\n", finalPrompt);
+  
     try {
       const response = await fetch(
         `https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`,
@@ -125,22 +130,26 @@ const Chatbot = () => {
           }),
         }
       );
-
+  
       const data = await response.json();
+      console.log("🔹 Gemini API Response:", data);
+  
       const geminiResponse = data?.candidates?.[0]?.content?.parts?.[0]?.text || "🤖 No meaningful response.";
-
-      let formattedResponse = geminiResponse.replace(/(\*\*|\*)/g, ""); // Remove markdown bold/italics
-
-      // Store response in chat history
+  
+      // ✅ Remove markdown bold and italics from response
+      let formattedResponse = geminiResponse.replace(/(\*\*|\*)/g, "");
+  
+      // ✅ Store new response in chat history (corrected trim order)
       previousChats.push({ user: userQuery, bot: formattedResponse });
       chatHistory.set(teckziteId, previousChats.slice(-10));
-
+  
       return formattedResponse;
     } catch (error) {
       console.error("⚠️ Gemini API Error:", error);
       return `⚠️ Error: ${error.message}`;
     }
   };
+  
 
   // Send message to Rasa and process Gemini AI response
   const sendMessage = async (message) => {
