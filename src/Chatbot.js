@@ -65,7 +65,7 @@ const generateTechZiteResponse = async (userQuery, additionalContext) => {
   if (!chatHistory.has(teckziteId)) {
     chatHistory.set(teckziteId, []);
   }
-
+  console.log(chatHistory);
   let previousChats = chatHistory.get(teckziteId) || [];
 
   // Store only the last 10 messages
