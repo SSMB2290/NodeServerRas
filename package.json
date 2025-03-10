@@ -30,7 +30,7 @@
   },
   "scripts": {
     
-  "start": "HOST=0.0.0.0 PORT=3000 react-scripts start"
+  "start": "PORT=3000 react-scripts start"
 ,
 
     "build": "react-scripts build",
