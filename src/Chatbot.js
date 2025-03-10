@@ -76,10 +76,10 @@ const Chatbot = () => {
       chatHistory.set(teckziteId, previousChats);
     }
 
-    // Format chat history for Gemini API
-    const formattedChatHistory = previousChats.length > 0
-  ? previousChats.join("\n")  // Just list the bot responses
+  const formattedChatHistory = previousChats.length > 0
+  ? previousChats.map(chat => chat?.response || "").join("\n")  // Extract response text
   : "No previous conversation.";
+
 
     console.log(formattedChatHistory);
 
