@@ -4,7 +4,6 @@ import { useNavigate } from "react-router-dom";
 import "./glitter.css";
 
 const GEMINI_API_KEY = "AIzaSyAMEQ_c9hqT2xC8E9vWZJIB62PebLHzS2s";// Use REACT_APP_ prefix for Create React App
-
 const Chatbot = () => {
   const [messages, setMessages] = useState([{ text: "Hello! How can I assist you?", sender: "bot" }]);
   const [userInput, setUserInput] = useState("");
