@@ -79,6 +79,7 @@ const generateTechZiteResponse = async (userQuery, additionalContext) => {
     .map(chat => `User: ${chat.user}\nBot: ${chat.bot}`)
     .join("\n") || "No previous conversation.";
 
+  console.log("Formatted History"+formattedChatHistory);
   // Detect greeting queries
   const lowerQuery = userQuery.toLowerCase();
   const isGreeting = ["hi", "hello", "hey"].some(greet => lowerQuery.includes(greet));
