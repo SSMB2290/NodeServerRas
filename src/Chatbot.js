@@ -64,8 +64,11 @@ const Chatbot = () => {
   You are TechZiteBot, an assistant for TechZite 2025.
   User Query: ${userQuery}
   Context: ${additionalContext}
-  User Info: ${userDetails?.name ? `Name: ${userDetails.name}, Events: ${userDetails.events?.join(", ")}` : "Unknown"}
+User Info: ${userDetails?.name 
+  ? `Name: ${userDetails.name}, Teckzite ID: ${userDetails.teckzite_id}, Events: ${userDetails.events?.join(", ")}` 
+  : "Unknown"}
 `;
+
 console.log(finalPrompt);
 
   //  console.log(userDetails);
