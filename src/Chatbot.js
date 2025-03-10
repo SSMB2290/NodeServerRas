@@ -108,6 +108,8 @@ const Chatbot = () => {
     if (previousResponse) {
       return previousResponse.bot;
     }
+
+    console.log("user details"+userDetails);
   
     // ✅ Construct the final prompt for Gemini API
     const finalPrompt = `
