@@ -15,7 +15,7 @@ const Chatbot = () => {
   // Predefined quick action buttons
   const predefinedMessages = {
     Events: "What events are available for everyone?",
-    Theme: "What is the theme of Teckzite this year?",
+    Theme: "What themes are covered in the AI Hackathon?",
     Sponsors: "Can you list the sponsors for Teckzite?",
     registrations: "What is the registration process for Teckzite?",
     workshops: "What workshops are being conducted?",
