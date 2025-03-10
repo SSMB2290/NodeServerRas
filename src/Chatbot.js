@@ -53,7 +53,7 @@ const Chatbot = () => {
     }
   };
 
-  const generateTechZiteResponse = async (userQuery, additionalContext) => {
+  const generateTechZiteResponse = async (userQuery, additionalContext, userDetails) => {
     if (!GEMINI_API_KEY) return "⚠️ API key missing.";
   
     // ✅ Always fetch the latest teckzite_id from localStorage
@@ -77,12 +77,17 @@ const Chatbot = () => {
   
     chatHistory.set(teckziteId, previousChats);
   
-    // ✅ Correctly extract bot responses from chat history
+    // ✅ Format chat history (includes both user queries and bot responses)
     const formattedChatHistory = previousChats.length > 0
-      ? previousChats.map(chat => chat.bot || "").join("\n")  // Extract only bot responses
+      ? previousChats.map(chat => `User: ${chat.user}\nBot: ${chat.bot}`).join("\n")
       : "No previous conversation.";
   
     console.log("🔹 Chat History Sent to Gemini:", formattedChatHistory);
+  
+    // ✅ Ensure `userDetails` is available
+    const userInfo = userDetails
+      ? `Name: ${userDetails.name}, Email: ${userDetails.email}, Events: ${userDetails.events?.join(", ") || "None"}`
+      : "User details not available.";
   
     // ✅ Detect greeting queries
     const lowerQuery = userQuery.toLowerCase();
@@ -108,9 +113,11 @@ const Chatbot = () => {
       You are TechZiteBot, an assistant for TechZite 2025.
       User Query: ${userQuery}
       Context: ${additionalContext}
-      Previous Chats: ${formattedChatHistory}
-      User Info: Teckzite ID: ${teckziteId}
+      Previous Chats: 
+      ${formattedChatHistory}
   
+      User Info: ${userInfo}
+      
       Instructions:
       - If the user greets, respond with: "Hi ${teckziteId}, I am here to assist you!"
       - If the same query was asked before, return the same response from history.
