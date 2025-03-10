@@ -15,8 +15,8 @@ L.Icon.Default.mergeOptions({
 
 // Predefined locations for the Tech Fest
 const locations = [
-  { id: 1, name: "RGUKT Nuzvid", coords: [16.7861, 80.8463] },
-  { id: 2, name: "RGUKT Auditorium", coords: [16.7875, 80.8448] },
+  { id: 1, name: "RGUKT Food Court", coords: [16.7861, 80.8463] },
+  { id: 2, name: "RGUKT SAC Auditorium", coords: [16.7875, 80.8448] },
   { id: 3, name: "RGUKT Academic Block 1", coords: [16.7882, 80.8456] },
   { id: 4, name: "RGUKT Academic Block 2", coords: [16.7890, 80.8460] },
 ];
