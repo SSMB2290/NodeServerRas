@@ -49,55 +49,50 @@ const Chatbot = () => {
     }
   };
 // Global chat history (stores last 10 messages per user)
-// Global chat history (stores last 10 messages per user)
-const chatHistory = new Map(); // Maps user_id -> [messages array]
+const chatHistory = new Map(); // Stores user_id -> chat messages
 
 const generateTechZiteResponse = async (userQuery, additionalContext) => {
   if (!GEMINI_API_KEY) return "⚠️ API key missing.";
 
-  // Debugging: Check what userDetails actually contains
-  console.log("🔍 Debug: Received userDetails ->", userDetails);
-
-  // Extract user ID (or treat as "not logged in")
-  const user_id = userDetails?.teckzite_id || "unknown_user";
+  // Always fetch the latest teckzite_id from localStorage
+  let teckziteId = localStorage.getItem("teckzite_id") || null;
 
   // Ensure user-specific chat history exists
-  if (!chatHistory.has(user_id)) {
-    chatHistory.set(user_id, []);
+  if (!teckziteId) {
+    return "❌ Sorry, you are not logged in. Please log in to continue.";
   }
 
-  // Get previous chats and trim to the last 10 messages
-  let previousChats = chatHistory.get(user_id);
+  if (!chatHistory.has(teckziteId)) {
+    chatHistory.set(teckziteId, []);
+  }
+
+  let previousChats = chatHistory.get(teckziteId) || [];
+
+  // Store only the last 10 messages
   if (previousChats.length > 10) {
     previousChats = previousChats.slice(-10);
-    chatHistory.set(user_id, previousChats);
+    chatHistory.set(teckziteId, previousChats);
   }
 
-  // Format chat history for context
+  // Format chat history for Gemini API
   const formattedChatHistory = previousChats
     .map(chat => `User: ${chat.user}\nBot: ${chat.bot}`)
     .join("\n") || "No previous conversation.";
 
-  // Handle greeting (Hi, Hello, Hey, etc.)
+  // Detect greeting queries
   const lowerQuery = userQuery.toLowerCase();
   const isGreeting = ["hi", "hello", "hey"].some(greet => lowerQuery.includes(greet));
 
-  // Determine correct greeting response
-  let greetingResponse;
-  if (userDetails?.teckzite_id) {
-    greetingResponse = `Hi ${userDetails.teckzite_id}, I am here to assist you!`;
-  } else {
-    greetingResponse = "Sorry, you are not logged in.";
-  }
+  // Properly respond to greetings (with stored response if asked before)
+  let greetingResponse = `Hi ${teckziteId}, I am here to assist you!`;
 
-  // If greeting exists in history, return the same response
   if (isGreeting) {
     const lastUserMessage = previousChats.length > 0 ? previousChats[previousChats.length - 1].user.toLowerCase() : "";
     if (lastUserMessage === lowerQuery) {
       return previousChats[previousChats.length - 1].bot; // Return cached response
     }
     previousChats.push({ user: userQuery, bot: greetingResponse });
-    chatHistory.set(user_id, previousChats.slice(-10));
+    chatHistory.set(teckziteId, previousChats);
     return greetingResponse;
   }
 
@@ -107,12 +102,10 @@ const generateTechZiteResponse = async (userQuery, additionalContext) => {
     User Query: ${userQuery}
     Context: ${additionalContext}
     Previous Chats: ${formattedChatHistory}
-    User Info: ${userDetails?.teckzite_id 
-      ? `Teckzite ID: ${userDetails.teckzite_id}, Events: ${userDetails.events?.join(", ") || "None"}`
-      : "Sorry, you are not logged in."}
+    User Info: Teckzite ID: ${teckziteId}
 
     Instructions:
-    - If the user greets, respond with: "Hi TZK250799, I am here to assist you!" (or "Sorry, you are not logged in." if missing).
+    - If the user greets, respond with: "Hi ${teckziteId}, I am here to assist you!"
     - If the same query was asked before, return the same response from history.
     - Avoid unnecessary name repetition.
   `;
@@ -134,15 +127,13 @@ const generateTechZiteResponse = async (userQuery, additionalContext) => {
     const data = await response.json();
     console.log("🔹 Gemini API Response:", data);
 
-    // Extract response text or return a default message
     const geminiResponse = data?.candidates?.[0]?.content?.parts?.[0]?.text || "🤖 No meaningful response.";
 
-    // Remove markdown bold and italics from response
-    let formattedResponse = geminiResponse.replace(/(\*\*|\*)/g, "");
+    let formattedResponse = geminiResponse.replace(/(\*\*|\*)/g, ""); // Remove markdown bold/italics
 
-    // Store chat in history (keep last 10 chats per user)
+    // Store response in chat history
     previousChats.push({ user: userQuery, bot: formattedResponse });
-    chatHistory.set(user_id, previousChats.slice(-10));
+    chatHistory.set(teckziteId, previousChats.slice(-10));
 
     return formattedResponse;
   } catch (error) {
@@ -150,9 +141,6 @@ const generateTechZiteResponse = async (userQuery, additionalContext) => {
     return `⚠️ Error: ${error.message}`;
   }
 };
-
-
-
   // Send message to Rasa and process Gemini AI response
   const sendMessage = async (message) => {
     const userMessage = message || userInput;
