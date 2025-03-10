@@ -1,70 +1,72 @@
-# Getting Started with Create React App
+# AI Receptionist for Event Management - TECKZITE
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+## Setup Instructions
 
-## Available Scripts
+### 1. Install Dependencies
+Ensure you have Python installed. Then, run the following command to install all required dependencies:
+```bash
+pip install -r requirements.txt
+```
 
-In the project directory, you can run:
+### 2. Prepare Rasa Data Files
+Ensure you have the following files properly configured with necessary intents, responses, and actions:
+- `nlu.yml` (Contains intents and example user messages)
+- `stories.yml` (Defines conversation flows)
+- `domain.yml` (Defines responses, intents, and actions)
 
-### `npm start`
+### 3. Train the Rasa Model
+Run the following command to train the Rasa model:
+```bash
+rasa train
+```
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+### 4. Run Rasa Servers in Parallel
+Start two servers in parallel:
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+#### Run Rasa Actions Server:
+```bash
+rasa run actions
+```
 
-### `npm test`
+#### Run Rasa Main Server:
+```bash
+rasa run --enable-api --cors "*"
+```
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+### 5. Interacting with the Chatbot
+Once both servers are running, the chatbot interacts with users through `agent chatbot.js`. The chatbot:
+- Processes user queries and refines responses from the Rasa model.
+- Enhances responses with **Gemini API integration**.
+- Provides complete information about **TECKZITE**, the event it is designed for.
+- Sends **email reminders** to registered students 10 minutes before their scheduled events.
+- Shows event locations using **Leaflet API** for precise navigation within **Rajiv Gandhi University of Knowledge Technologies, Nuzvid**.
 
-### `npm run build`
+---
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+## Tech Stack
+We have built this project using the **MERN stack**:
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+### **Backend:**
+- **MongoDB**: Stores registered user details and event information.
+- **Express.js**: Handles fetch requests and API endpoints.
+- **Node.js**: Runs the REST API for chatbot interactions and database operations.
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+### **Frontend:**
+- **React.js**: Provides an interactive UI for users.
+- **Leaflet.js API**: Displays event locations on a map.
 
-### `npm run eject`
+### **AI & Rasa Framework:**
+- **Rasa NLU & Core**: Manages chatbot conversations.
+- **Gemini API**: Enhances chatbot responses.
+- **Email Integration**: Sends reminders to registered users.
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+---
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+## Features
+- **Event Information**: Provides details about events at TECKZITE.
+- **Personalized Reminders**: Sends emails 10 minutes before an event.
+- **Location Navigation**: Guides users to event locations using Leaflet.
+- **AI-Enhanced Chatbot**: Uses Gemini API for better responses.
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+This AI Receptionist serves as a smart assistant for managing event-related queries and providing seamless event navigation. 🚀
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
-
-## Learn More
-
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
-
-### Code Splitting
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
-
-### Analyzing the Bundle Size
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
-
-### Making a Progressive Web App
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
