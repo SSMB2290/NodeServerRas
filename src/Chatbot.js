@@ -47,32 +47,39 @@ const Chatbot = () => {
       console.error("Error fetching user details:", error);
     }
   };
-
-  // Generate response using Gemini AI
-  // Global chat history (stores last 10 messages per user)
+// Global chat history (stores last 10 messages per user)
 const chatHistory = new Map(); // Stores user_id -> [messages array]
 
 const generateTechZiteResponse = async (userQuery, additionalContext, userDetails) => {
   if (!GEMINI_API_KEY) return "⚠️ API key missing.";
 
-  // Fetch previous chat history (last 10 messages)
+  // Ensure userDetails exists to prevent errors
   const user_id = userDetails?.teckzite_id || "unknown_user";
+
+  // Initialize chat history for user if not present
   if (!chatHistory.has(user_id)) {
     chatHistory.set(user_id, []);
   }
 
+  // Get previous chats and limit to the last 10 messages
   let previousChats = chatHistory.get(user_id);
   if (previousChats.length > 10) {
-    previousChats = previousChats.slice(-10); // Keep only the last 10 messages
+    previousChats = previousChats.slice(-10);
+    chatHistory.set(user_id, previousChats); // Update trimmed history
   }
 
   // Format chat history
-  const formattedChatHistory = previousChats.map(chat => `User: ${chat.user}\nBot: ${chat.bot}`).join("\n");
+  const formattedChatHistory = previousChats
+    .map(chat => `User: ${chat.user}\nBot: ${chat.bot}`)
+    .join("\n");
 
-  // Prevent bot from unnecessarily stating user's name unless explicitly asked
-  const userInfo = userQuery.toLowerCase().includes("hi") || userQuery.toLowerCase().includes("hello") || userQuery.toLowerCase().includes("what's my name")
-    ? `Name: ${userDetails.name}, Teckzite ID: ${userDetails.teckzite_id}, Events: ${userDetails.events?.join(", ")}`
-    : `Teckzite ID: ${userDetails.teckzite_id}, Events: ${userDetails.events?.join(", ")}`;
+  // Prevent bot from revealing user's name unless explicitly asked
+  const lowerQuery = userQuery.toLowerCase();
+  const shouldIncludeName = lowerQuery.includes("hi") || lowerQuery.includes("hello") || lowerQuery.includes("what's my name");
+
+  const userInfo = shouldIncludeName
+    ? `Name: ${userDetails?.name || "Unknown"}, Teckzite ID: ${userDetails?.teckzite_id || "Unknown"}, Events: ${userDetails?.events?.join(", ") || "None"}`
+    : `Teckzite ID: ${userDetails?.teckzite_id || "Unknown"}, Events: ${userDetails?.events?.join(", ") || "None"}`;
 
   // Construct the final prompt for Gemini API
   const finalPrompt = `
@@ -85,7 +92,7 @@ const generateTechZiteResponse = async (userQuery, additionalContext, userDetail
     Remember: Do not reveal the user's name unless greeted or explicitly asked.
   `;
 
-  console.log(finalPrompt);
+  console.log("🔹 Final Prompt Sent to Gemini:\n", finalPrompt);
 
   try {
     const response = await fetch(
@@ -100,7 +107,9 @@ const generateTechZiteResponse = async (userQuery, additionalContext, userDetail
     );
 
     const data = await response.json();
-    console.log(data);
+    console.log("🔹 Gemini API Response:", data);
+
+    // Extract response text or return a default message
     const geminiResponse = data?.candidates?.[0]?.content?.parts?.[0]?.text || "🤖 No meaningful response.";
 
     // Remove markdown bold and italics from response
@@ -108,13 +117,15 @@ const generateTechZiteResponse = async (userQuery, additionalContext, userDetail
 
     // Store chat in history (keep last 10 chats per user)
     previousChats.push({ user: userQuery, bot: formattedResponse });
-    chatHistory.set(user_id, previousChats);
-
+    chatHistory.set(user_id, previousChats.slice(-10)); // Ensure history stays within 10 messages
+    console.log(chatHistory);
     return formattedResponse;
   } catch (error) {
+    console.error("⚠️ Gemini API Error:", error);
     return `⚠️ Error: ${error.message}`;
   }
 };
+
 
   // Send message to Rasa and process Gemini AI response
   const sendMessage = async (message) => {
