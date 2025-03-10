@@ -120,11 +120,11 @@ console.log(finalPrompt);
 
     try {
      
-      const rasaResponse = await fetch("https://rasa-8.onrender.com/webhooks/rest/webhook", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ sender: "user", message: userMessage }),
-      });
+      const rasaResponse = await fetch("http://localhost:5005/webhooks/rest/webhook", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ sender: "user", message: userMessage }),
+    });
     
       const rasaData = await rasaResponse.json();
      
