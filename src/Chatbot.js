@@ -26,6 +26,7 @@ const Chatbot = () => {
   // Fetch user details from MongoDB after login
   useEffect(() => {
     fetchUserDetails();
+    
   }, []);
 
   const fetchUserDetails = async () => {
@@ -51,7 +52,7 @@ const Chatbot = () => {
 // Global chat history (stores last 10 messages per user)
 const chatHistory = new Map(); // Maps user_id -> [messages array]
 
-const generateTechZiteResponse = async (userQuery, additionalContext, userDetails) => {
+const generateTechZiteResponse = async (userQuery, additionalContext) => {
   if (!GEMINI_API_KEY) return "⚠️ API key missing.";
 
   // Debugging: Check what userDetails actually contains
