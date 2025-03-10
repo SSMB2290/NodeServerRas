@@ -109,20 +109,46 @@ const Chatbot = () => {
     }
   
     // ✅ Construct the final prompt for Gemini API
-    const finalPrompt = `
-      You are TechZiteBot, an assistant for TechZite 2025.
-      User Query: ${userQuery}
-      Context: ${additionalContext}
-      Previous Chats: 
-      ${formattedChatHistory}
+    // const finalPrompt = `
+    //   You are TechZiteBot, an assistant for TechZite 2025.
+    //   User Query: ${userQuery}
+    //   Context: ${additionalContext}
+    //   Previous Chats: 
+    //   ${formattedChatHistory}
   
-      User Info: ${userInfo}
+    //   User Info: ${userInfo}
       
-      Instructions:
-      - If the user greets, respond with: "Hi ${teckziteId}, I am here to assist you!"
-      - If the same query was asked before, return the same response from history.
-      - Avoid unnecessary name repetition.
-    `;
+    //   Instructions:
+    //   - If the user greets, respond with: "Hi ${teckziteId}, I am here to assist you!"
+    //   - If the same query was asked before, return the same response from history.
+    //   - Avoid unnecessary name repetition.
+    // `;
+    const finalPrompt = `
+You are TeckZiteBot, the official event assistant for TeckZite 2025. 
+Your role is to provide dynamic, user-specific responses based on prior conversations, user details, and structured event knowledge.
+
+User Query: ${userQuery}
+
+Context: ${additionalContext}
+
+Previous Chats:
+${formattedChatHistory}
+
+User Info:
+${userDetails?.teckzite_id 
+  ? `Teckzite ID: ${userDetails.teckzite_id}, Name: ${userDetails.name}, Email: ${userDetails.email}, Registered Events: ${userDetails.events?.join(", ") || "None"}`
+  : "User details not available."}
+
+Instructions:
+- Generate a **personalized response** that seamlessly continues the conversation from previous exchanges.
+- Use the **structured response** provided as a base, but **refine and personalize** it to match the user's past queries.
+- **Avoid generic greetings like 'Hi' unless the user explicitly greets first.**
+- Ensure the **response sounds natural**, considering the past chat history.
+- If the question is related to event details, reference the user's **registered events** where relevant.
+
+💡 **Now, generate the next response in this conversation naturally and contextually!**
+`;
+
   
     console.log("🔹 Final Prompt Sent to Gemini:\n", finalPrompt);
   
