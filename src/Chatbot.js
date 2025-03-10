@@ -134,6 +134,7 @@ const Chatbot = () => {
   ${additionalContext}
   
   🚀 **Instructions:**
+  - If you don't know something generate a formal response don't ask for anything to user especially Techzite Id
   - **Generate a context-aware response** based on prior messages.
   - **Use Rasa’s response as a guide**, but refine it dynamically.
   - **Do NOT include unnecessary greetings** (only greet if explicitly asked).
