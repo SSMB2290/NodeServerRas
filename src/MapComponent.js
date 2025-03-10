@@ -15,11 +15,17 @@ L.Icon.Default.mergeOptions({
 
 // Predefined locations for the Tech Fest
 const locations = [
-  { id: 1, name: "RGUKT Food Court", coords: [16.7861, 80.8463] },
-  { id: 2, name: "RGUKT SAC Auditorium", coords: [16.7875, 80.8448] },
+  { id: 1, name: "RGUKT Nuzvid", coords: [16.7861, 80.8463] },
+  { id: 2, name: "RGUKT Auditorium", coords: [16.7875, 80.8448] },
   { id: 3, name: "RGUKT Academic Block 1", coords: [16.7882, 80.8456] },
   { id: 4, name: "RGUKT Academic Block 2", coords: [16.7890, 80.8460] },
+  { id: 5, name: "RGUKT SKLM Campus", coords: [18.3389, 83.8973] }, // Approximate location
+  { id: 6, name: "Night Shows Spot", coords: [16.7855, 80.8439] }, // Common event ground area
+  { id: 7, name: "Food Stalls", coords: [16.7868, 80.8445] }, // Near main fest hub
+  { id: 8, name: "Game Stalls", coords: [16.7872, 80.8440] }, // Near student activity center
+  { id: 9, name: "Library", coords: [16.7885, 80.8470] } // RGUKT Central Library
 ];
+
 
 const MapComponent = () => {
   const navigate = useNavigate(); // Initialize useNavigate for navigation
