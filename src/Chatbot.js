@@ -3,7 +3,12 @@ import { FaCalendarAlt, FaMoon, FaStore, FaClipboardList, FaLaptopCode, FaLightb
 import { useNavigate } from "react-router-dom";
 import "./glitter.css";
 import MapComponent from './MapComponent';
-  const GEMINI_API_KEY = "AIzaSyAMEQ_c9hqT2xC8E9vWZJIB62PebLHzS2s";// Use REACT_APP_ prefix for Create React App
+
+const GEMINI_API_KEY = "AIzaSyAMEQ_c9hqT2xC8E9vWZJIB62PebLHzS2s"; // Use REACT_APP_ prefix for Create React App
+
+// Global chat history (stores last 10 messages per user)
+const chatHistory = new Map(); // Stores user_id -> chat messages
+
 const Chatbot = () => {
   const [messages, setMessages] = useState([{ text: "Hello! How can I assist you?", sender: "bot" }]);
   const [userInput, setUserInput] = useState("");
@@ -26,7 +31,6 @@ const Chatbot = () => {
   // Fetch user details from MongoDB after login
   useEffect(() => {
     fetchUserDetails();
-    
   }, []);
 
   const fetchUserDetails = async () => {
@@ -48,100 +52,94 @@ const Chatbot = () => {
       console.error("Error fetching user details:", error);
     }
   };
-// Global chat history (stores last 10 messages per user)
-const chatHistory = new Map(); // Stores user_id -> chat messages
 
-const generateTechZiteResponse = async (userQuery, additionalContext) => {
-  if (!GEMINI_API_KEY) return "⚠️ API key missing.";
+  const generateTechZiteResponse = async (userQuery, additionalContext) => {
+    if (!GEMINI_API_KEY) return "⚠️ API key missing.";
 
-  // Always fetch the latest teckzite_id from localStorage
-  let teckziteId = localStorage.getItem("teckzite_id") || null;
+    // Always fetch the latest teckzite_id from localStorage
+    let teckziteId = localStorage.getItem("teckzite_id") || null;
 
-  // Ensure user-specific chat history exists
-  if (!teckziteId) {
-    return "❌ Sorry, you are not logged in. Please log in to continue.";
-  }
-
-  if (!chatHistory.has(teckziteId)) {
-    chatHistory.set(teckziteId, []);
-  }
-  console.log(chatHistory);
-  let previousChats = chatHistory.get(teckziteId) || [];
-
-  // Store only the last 10 messages
-  if (previousChats.length > 10) {
-    previousChats = previousChats.slice(-10);
-    chatHistory.set(teckziteId, previousChats);
-  }
-
-  // Format chat history for Gemini API
-  const formattedChatHistory = previousChats
-    .map(chat => `User: ${chat.user}\nBot: ${chat.bot}`)
-    .join("\n") || "No previous conversation.";
-
-  console.log("Formatted History"+formattedChatHistory);
-  // Detect greeting queries
-  const lowerQuery = userQuery.toLowerCase();
-  const isGreeting = ["hi", "hello", "hey"].some(greet => lowerQuery.includes(greet));
-
-  // Properly respond to greetings (with stored response if asked before)
-  let greetingResponse = `Hi ${teckziteId}, I am here to assist you!`;
-
-  if (isGreeting) {
-    const lastUserMessage = previousChats.length > 0 ? previousChats[previousChats.length - 1].user.toLowerCase() : "";
-    if (lastUserMessage === lowerQuery) {
-      return previousChats[previousChats.length - 1].bot; // Return cached response
+    // Ensure user-specific chat history exists
+    if (!teckziteId) {
+      return "❌ Sorry, you are not logged in. Please log in to continue.";
     }
-    previousChats.push({ user: userQuery, bot: greetingResponse });
-    chatHistory.set(teckziteId, previousChats);
-    return greetingResponse;
-  }
 
-  // Construct the final prompt for Gemini API
-  const finalPrompt = `
-    You are TechZiteBot, an assistant for TechZite 2025.
-    User Query: ${userQuery}
-    Context: ${additionalContext}
-    Previous Chats: ${formattedChatHistory}
-    User Info: Teckzite ID: ${teckziteId}
+    if (!chatHistory.has(teckziteId)) {
+      chatHistory.set(teckziteId, []);
+    }
 
-    Instructions:
-    - If the user greets, respond with: "Hi ${teckziteId}, I am here to assist you!"
-    - If the same query was asked before, return the same response from history.
-    - Avoid unnecessary name repetition.
-  `;
+    let previousChats = chatHistory.get(teckziteId) || [];
 
-  console.log("🔹 Final Prompt Sent to Gemini:\n", finalPrompt);
+    // Store only the last 10 messages
+    if (previousChats.length > 10) {
+      previousChats = previousChats.slice(-10);
+      chatHistory.set(teckziteId, previousChats);
+    }
 
-  try {
-    const response = await fetch(
-      `https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`,
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          contents: [{ role: "user", parts: [{ text: finalPrompt }] }]
-        }),
+    // Format chat history for Gemini API
+    const formattedChatHistory = previousChats
+      .map(chat => `User: ${chat.user}\nBot: ${chat.bot}`)
+      .join("\n") || "No previous conversation.";
+
+    // Detect greeting queries
+    const lowerQuery = userQuery.toLowerCase();
+    const isGreeting = ["hi", "hello", "hey"].some(greet => lowerQuery.includes(greet));
+
+    // Properly respond to greetings (with stored response if asked before)
+    let greetingResponse = `Hi ${teckziteId}, I am here to assist you!`;
+
+    if (isGreeting) {
+      const lastUserMessage = previousChats.length > 0 ? previousChats[previousChats.length - 1].user.toLowerCase() : "";
+      if (lastUserMessage === lowerQuery) {
+        return previousChats[previousChats.length - 1].bot; // Return cached response
       }
-    );
+      previousChats.push({ user: userQuery, bot: greetingResponse });
+      chatHistory.set(teckziteId, previousChats);
+      return greetingResponse;
+    }
 
-    const data = await response.json();
-    console.log("🔹 Gemini API Response:", data);
+    // Construct the final prompt for Gemini API
+    const finalPrompt = `
+      You are TechZiteBot, an assistant for TechZite 2025.
+      User Query: ${userQuery}
+      Context: ${additionalContext}
+      Previous Chats: ${formattedChatHistory}
+      User Info: Teckzite ID: ${teckziteId}
 
-    const geminiResponse = data?.candidates?.[0]?.content?.parts?.[0]?.text || "🤖 No meaningful response.";
+      Instructions:
+      - If the user greets, respond with: "Hi ${teckziteId}, I am here to assist you!"
+      - If the same query was asked before, return the same response from history.
+      - Avoid unnecessary name repetition.
+    `;
 
-    let formattedResponse = geminiResponse.replace(/(\*\*|\*)/g, ""); // Remove markdown bold/italics
+    try {
+      const response = await fetch(
+        `https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            contents: [{ role: "user", parts: [{ text: finalPrompt }] }]
+          }),
+        }
+      );
 
-    // Store response in chat history
-    previousChats.push({ user: userQuery, bot: formattedResponse });
-    chatHistory.set(teckziteId, previousChats.slice(-10));
+      const data = await response.json();
+      const geminiResponse = data?.candidates?.[0]?.content?.parts?.[0]?.text || "🤖 No meaningful response.";
 
-    return formattedResponse;
-  } catch (error) {
-    console.error("⚠️ Gemini API Error:", error);
-    return `⚠️ Error: ${error.message}`;
-  }
-};
+      let formattedResponse = geminiResponse.replace(/(\*\*|\*)/g, ""); // Remove markdown bold/italics
+
+      // Store response in chat history
+      previousChats.push({ user: userQuery, bot: formattedResponse });
+      chatHistory.set(teckziteId, previousChats.slice(-10));
+
+      return formattedResponse;
+    } catch (error) {
+      console.error("⚠️ Gemini API Error:", error);
+      return `⚠️ Error: ${error.message}`;
+    }
+  };
+
   // Send message to Rasa and process Gemini AI response
   const sendMessage = async (message) => {
     const userMessage = message || userInput;
@@ -158,33 +156,25 @@ const generateTechZiteResponse = async (userQuery, additionalContext) => {
     }
 
     try {
-     
       const rasaResponse = await fetch("http://localhost:5005/webhooks/rest/webhook", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ sender: "user", message: userMessage }),
-    });
-    
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ sender: "user", message: userMessage }),
+      });
+
       const rasaData = await rasaResponse.json();
-     
       const rasaText = rasaData.length > 0 ? rasaData[0].text : "I don't have an answer for that.";
-      console.log(rasaText);
+
       const formatResponseForHTML = (response) => {
         if (!response) return "🤖 No meaningful response.";
-      
-        // Remove markdown bold/italics (`**bold**`, `*italic*`)
         let formattedText = response.replace(/(\*\*|\*)/g, "");
-
-        console.log("formatted response"+formattedText);
-      
         return formattedText;
       };
-      
+
       const finalResponse = await generateTechZiteResponse(userMessage, rasaText);
       const formattedResponse = formatResponseForHTML(finalResponse);
-      
+
       setMessages([...newMessages, { text: formattedResponse, sender: "bot" }]);
-      
     } catch (error) {
       setMessages([...newMessages, { text: "⚠️ Server not responding.", sender: "bot" }]);
     } finally {
@@ -199,26 +189,25 @@ const generateTechZiteResponse = async (userQuery, additionalContext) => {
       <div style={styles.container}>
         {showConfetti && <div className="confetti"></div>}
 
-       <div style={styles.buttonContainer}>
-  {Object.entries(predefinedMessages).map(([key, value]) => (
-    <button key={key} style={styles.quickButton} onClick={() => sendMessage(value)}>
-      {key === "Events" && <FaCalendarAlt />}
-      {key === "Theme" && <FaMoon />}
-      {key === "Sponsors" && <FaStore />}
-      {key === "registrations" && <FaClipboardList />}
-      {key === "workshops" && <FaLightbulb />}
-      {key === "hackathons" && <FaLaptopCode />}
-      {key === "MegaExpo" && <FaTrophy />}
-      {key.charAt(0).toUpperCase() + key.slice(1)}
-    </button>
-  ))}
+        <div style={styles.buttonContainer}>
+          {Object.entries(predefinedMessages).map(([key, value]) => (
+            <button key={key} style={styles.quickButton} onClick={() => sendMessage(value)}>
+              {key === "Events" && <FaCalendarAlt />}
+              {key === "Theme" && <FaMoon />}
+              {key === "Sponsors" && <FaStore />}
+              {key === "registrations" && <FaClipboardList />}
+              {key === "workshops" && <FaLightbulb />}
+              {key === "hackathons" && <FaLaptopCode />}
+              {key === "MegaExpo" && <FaTrophy />}
+              {key.charAt(0).toUpperCase() + key.slice(1)}
+            </button>
+          ))}
 
-  {/* New "Show Event Map" Button */}
-  <button style={styles.quickButton} onClick={() => navigate('/map')}>
-    <FaMapMarkerAlt /> Show Event Map
-  </button>
-</div>
-
+          {/* New "Show Event Map" Button */}
+          <button style={styles.quickButton} onClick={() => navigate('/map')}>
+            <FaMapMarkerAlt /> Show Event Map
+          </button>
+        </div>
 
         <div style={styles.chatBox}>
           {messages.map((msg, index) => (
@@ -263,8 +252,7 @@ const styles = {
     letterSpacing: "2px", // Slight letter spacing to make the text more stylish and prominent
     textAlign: "center", // Center the text
     // Optional: making the text uppercase for a bolder feel
-  }
-,  
+  },
   container: {
     width: "70vw", // Adjusted to 70% of the viewport width
     maxWidth: "1000px", // Optional: You can set a max-width to prevent it from becoming too wide on large screens
