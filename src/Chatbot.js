@@ -83,16 +83,23 @@ const generateTechZiteResponse = async (userQuery, additionalContext, userDetail
 
   // Construct the final prompt for Gemini API
   const finalPrompt = `
-    You are TechZiteBot, an assistant for TechZite 2025.
-    User Query: ${userQuery}
-    Context: ${additionalContext}
-    Previous Chats: ${formattedChatHistory || "No previous conversation."}
-    User Info: ${userInfo}
-    
-    Remember: Do not reveal the user's name unless greeted or explicitly asked.
-  `;
+  You are TechZiteBot, an assistant for TechZite 2025.
+  User Query: ${userQuery}
+  Context: ${additionalContext}
+  Previous Chats: ${formattedChatHistory || "No previous conversation."}
+  User Info: ${userDetails?.name 
+    ? `Name: ${userDetails.name}, Teckzite ID: ${userDetails.teckzite_id}, Events: ${userDetails.events?.join(", ")}` 
+    : "Teckzite ID: Unknown, Events: None"}
 
-  console.log("🔹 Final Prompt Sent to Gemini:\n", finalPrompt);
+  Instructions:
+  - Greet users by name if available.
+  - Do NOT ask for their TechZite ID. Assume it is already known.
+  - If the user greets (like "hi" or "hello"), just say: "Hi [Name], I am here to assist you!"
+  - Keep responses concise and helpful.
+`;
+
+console.log("🔹 Final Prompt Sent to Gemini:\n", finalPrompt);
+
 
   try {
     const response = await fetch(
