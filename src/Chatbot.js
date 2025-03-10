@@ -15,13 +15,13 @@ const Chatbot = () => {
 
   // Predefined quick action buttons
   const predefinedMessages = {
-    events: "Explain about the events in this tech fest.",
-    nightShows: "Tell me about the night shows planned for this tech fest.",
-    stalls: "What stalls will be available at the tech fest?",
-    registrations: "How do I register for the tech fest?",
+    Events: "What events are available for everyone?",
+    Theme: "What is the theme of Teckzite this year?",
+    Sponsors: "Can you list the sponsors for Teckzite?",
+    registrations: "What is the registration process for Teckzite?",
     workshops: "What workshops are being conducted?",
-    hackathons: "Give me details about the hackathons happening.",
-    competitions: "What competitions are there?",
+    hackathons: "What hackathons are available at Teckzite?",
+    MegaExpo: "Tell me about the MegaExpo event.",
   };
 
   // Fetch user details from MongoDB after login
@@ -162,13 +162,13 @@ console.log(finalPrompt);
         <div style={styles.buttonContainer}>
           {Object.entries(predefinedMessages).map(([key, value]) => (
             <button key={key} style={styles.quickButton} onClick={() => sendMessage(value)}>
-              {key === "events" && <FaCalendarAlt />}
-              {key === "nightShows" && <FaMoon />}
-              {key === "stalls" && <FaStore />}
+              {key === "Events" && <FaCalendarAlt />}
+              {key === "Theme" && <FaMoon />}
+              {key === "Sponsors" && <FaStore />}
               {key === "registrations" && <FaClipboardList />}
               {key === "workshops" && <FaLightbulb />}
               {key === "hackathons" && <FaLaptopCode />}
-              {key === "competitions" && <FaTrophy />}
+              {key === "MegaExpo" && <FaTrophy />}
               {key.charAt(0).toUpperCase() + key.slice(1)}
             </button>
           ))}
