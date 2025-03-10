@@ -53,11 +53,18 @@ const chatHistory = new Map(); // Stores user_id -> [messages array]
 const generateTechZiteResponse = async (userQuery, additionalContext, userDetails) => {
   if (!GEMINI_API_KEY) return "⚠️ API key missing.";
 
-  // Extract user ID (or mark as "not logged in")
-  const user_id = userDetails?.teckzite_id || "unknown_user";
-  const user_teckzite_id = userDetails?.teckzite_id || "Sorry, you are not logged in.";
+  // Debugging: Check what userDetails actually contains
+  console.log("🔍 Debug: Received userDetails ->", userDetails);
 
-  // Initialize chat history for user if not present
+  // Ensure userDetails exists and contains teckzite_id
+  let user_id = userDetails?.teckzite_id;
+  
+  if (!user_id) {
+    console.warn("⚠️ No TeckZite ID found. Treating user as not logged in.");
+    user_id = "unknown_user";
+  }
+
+  // Initialize chat history for the user if not present
   if (!chatHistory.has(user_id)) {
     chatHistory.set(user_id, []);
   }
@@ -69,30 +76,26 @@ const generateTechZiteResponse = async (userQuery, additionalContext, userDetail
     chatHistory.set(user_id, previousChats); // Update trimmed history
   }
 
-  // Check if the same message already exists in chat history
+  // If same query exists in chat history, return the same response
   const lastUserMessage = previousChats.length > 0 ? previousChats[previousChats.length - 1].user : "";
   if (lastUserMessage.toLowerCase() === userQuery.toLowerCase()) {
-    const lastBotResponse = previousChats[previousChats.length - 1].bot;
-    return lastBotResponse; // Return the same response
+    return previousChats[previousChats.length - 1].bot;
   }
 
-  // Format chat history
-  const formattedChatHistory = previousChats
-    .map(chat => `User: ${chat.user}\nBot: ${chat.bot}`)
-    .join("\n");
-
-  // Special greeting handling: If the user greets, show the TeckZite ID or login message
+  // Determine correct greeting response
   const lowerQuery = userQuery.toLowerCase();
   const isGreeting = lowerQuery.includes("hi") || lowerQuery.includes("hello") || lowerQuery.includes("hey");
   
+  const user_teckzite_id = userDetails?.teckzite_id 
+    ? `Hi ${userDetails.teckzite_id}, I am here to assist you!`
+    : "Sorry, you are not logged in.";
+
   if (isGreeting) {
-    const greetingResponse = `Hi ${user_teckzite_id}, I am here to assist you!`;
-    
     // Store response in chat history
-    previousChats.push({ user: userQuery, bot: greetingResponse });
+    previousChats.push({ user: userQuery, bot: user_teckzite_id });
     chatHistory.set(user_id, previousChats.slice(-10));
 
-    return greetingResponse;
+    return user_teckzite_id;
   }
 
   // Construct the final prompt for Gemini API
@@ -101,13 +104,14 @@ const generateTechZiteResponse = async (userQuery, additionalContext, userDetail
     User Query: ${userQuery}
     Context: ${additionalContext}
     Previous Chats: ${formattedChatHistory || "No previous conversation."}
-    User Info: Teckzite ID: ${user_teckzite_id}, Events: ${userDetails?.events?.join(", ") || "None"}
+    User Info: ${userDetails?.teckzite_id 
+      ? `Teckzite ID: ${userDetails.teckzite_id}, Events: ${userDetails.events?.join(", ") || "None"}`
+      : "Sorry, you are not logged in."}
 
     Instructions:
-    - Greet users with their TeckZite ID.
-    - If TeckZite ID is missing, say: "Sorry, you are not logged in."
-    - If a greeting is received, respond with: "Hi [TeckZite ID], I am here to assist you!"
-    - If the same query exists in chat history, return the same response.
+    - Always greet the user with "Hi [TeckZite ID]" if logged in.
+    - If TeckZite ID is missing, say "Sorry, you are not logged in."
+    - If the same query was asked before, return the same response.
   `;
 
   console.log("🔹 Final Prompt Sent to Gemini:\n", finalPrompt);
@@ -143,7 +147,6 @@ const generateTechZiteResponse = async (userQuery, additionalContext, userDetail
     return `⚠️ Error: ${error.message}`;
   }
 };
-
 
 
   // Send message to Rasa and process Gemini AI response
