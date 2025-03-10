@@ -70,14 +70,13 @@ const Chatbot = () => {
   
     let previousChats = chatHistory.get(teckziteId) || [];
   
-    // ✅ Store only the last 10 messages (corrected trimming order)
+    // ✅ Store only the last 10 messages
     if (previousChats.length > 10) {
       previousChats = previousChats.slice(-10);
     }
-  
     chatHistory.set(teckziteId, previousChats);
   
-    // ✅ Format chat history (includes both user queries and bot responses)
+    // ✅ Format chat history (both user queries & bot responses)
     const formattedChatHistory = previousChats.length > 0
       ? previousChats.map(chat => `User: ${chat.user}\nBot: ${chat.bot}`).join("\n")
       : "No previous conversation.";
@@ -86,69 +85,61 @@ const Chatbot = () => {
   
     // ✅ Ensure `userDetails` is available
     const userInfo = userDetails
-      ? `Name: ${userDetails.name}, Email: ${userDetails.email}, Events: ${userDetails.events?.join(", ") || "None"}`
+      ? `Name: ${userDetails.name}, Email: ${userDetails.email}, Registered Events: ${userDetails.events?.join(", ") || "None"}`
       : "User details not available.";
   
-    // ✅ Detect greeting queries
+    // ✅ Detect greeting queries (without overriding other responses)
     const lowerQuery = userQuery.toLowerCase();
-    const isGreeting = ["hi", "hello", "hey"].some(greet => lowerQuery.includes(greet));
-  
-    // ✅ Properly respond to greetings
-    let greetingResponse = `Hi ${teckziteId}, I am here to assist you!`;
+    const isGreeting = ["hi", "hello", "hey"].some(greet => lowerQuery === greet);
   
     if (isGreeting) {
+      // ✅ If the user greets and no prior greeting exists in history, return it
       const lastUserMessage = previousChats.length > 0 ? previousChats[previousChats.length - 1].user.toLowerCase() : "";
-      if (lastUserMessage === lowerQuery) {
-        return previousChats[previousChats.length - 1].bot; // ✅ Return cached response for repeated greetings
+      if (lastUserMessage !== lowerQuery) {
+        const greetingResponse = `Hi ${teckziteId}, I am here to assist you!`;
+        previousChats.push({ user: userQuery, bot: greetingResponse });
+        chatHistory.set(teckziteId, previousChats.slice(-10));
+        return greetingResponse;
       }
+    }
   
-      // ✅ Store greeting response correctly
-      previousChats.push({ user: userQuery, bot: greetingResponse });
-      chatHistory.set(teckziteId, previousChats.slice(-10)); // ✅ Trim **after** adding the new response
-      return greetingResponse;
+    // ✅ Check if the same query was asked before, return historical response
+    const previousResponse = previousChats.find(chat => chat.user.toLowerCase() === lowerQuery);
+    if (previousResponse) {
+      return previousResponse.bot;
     }
   
     // ✅ Construct the final prompt for Gemini API
-    // const finalPrompt = `
-    //   You are TechZiteBot, an assistant for TechZite 2025.
-    //   User Query: ${userQuery}
-    //   Context: ${additionalContext}
-    //   Previous Chats: 
-    //   ${formattedChatHistory}
-  
-    //   User Info: ${userInfo}
-      
-    //   Instructions:
-    //   - If the user greets, respond with: "Hi ${teckziteId}, I am here to assist you!"
-    //   - If the same query was asked before, return the same response from history.
-    //   - Avoid unnecessary name repetition.
-    // `;
     const finalPrompt = `
-You are TeckZiteBot, the official event assistant for TeckZite 2025. 
-Your role is to provide dynamic, user-specific responses based on prior conversations, user details, and structured event knowledge.
-
-User Query: ${userQuery}
-
-Context: ${additionalContext}
-
-Previous Chats:
-${formattedChatHistory}
-
-User Info:
-${userDetails?.teckzite_id 
-  ? `Teckzite ID: ${userDetails.teckzite_id}, Name: ${userDetails.name}, Email: ${userDetails.email}, Registered Events: ${userDetails.events?.join(", ") || "None"}`
-  : "User details not available."}
-
-Instructions:
-- Generate a **personalized response** that seamlessly continues the conversation from previous exchanges.
-- Use the **structured response** provided as a base, but **refine and personalize** it to match the user's past queries.
-- **Avoid generic greetings like 'Hi' unless the user explicitly greets first.**
-- Ensure the **response sounds natural**, considering the past chat history.
-- If the question is related to event details, reference the user's **registered events** where relevant.
-
-💡 **Now, generate the next response in this conversation naturally and contextually!**
-`;
-
+  You are TechZiteBot, the official event assistant for TechZite 2025. 
+  Your role is to provide **accurate, dynamic, and user-specific responses** based on:
+  - **Previous conversations**
+  - **User details (Teckzite ID, name, registered events, etc.)**
+  - **Rasa’s structured knowledge base**
+  
+  🆔 **User Details:**
+  ${userDetails?.teckzite_id 
+    ? `Teckzite ID: ${userDetails.teckzite_id}, Name: ${userDetails.name}, Email: ${userDetails.email}, Registered Events: ${userDetails.events?.join(", ") || "None"}`
+    : "User details not available."}
+  
+  💬 **Previous Conversation History:**
+  ${formattedChatHistory}
+  
+  ❓ **New User Query:**
+  User: ${userQuery}
+  
+  🎯 **Rasa’s Response to This Query:**
+  ${additionalContext}
+  
+  🚀 **Instructions:**
+  - **Generate a context-aware response** based on prior messages.
+  - **Use Rasa’s response as a guide**, but refine it dynamically.
+  - **Do NOT include unnecessary greetings** (only greet if explicitly asked).
+  - **Avoid repeating previous answers exactly** unless the same question was asked.
+  - **If the query relates to events, reference the user's registered events.**
+  
+  💡 **Now, generate the next response naturally and contextually!**
+  `;
   
     console.log("🔹 Final Prompt Sent to Gemini:\n", finalPrompt);
   
@@ -182,6 +173,7 @@ Instructions:
       return `⚠️ Error: ${error.message}`;
     }
   };
+  
   
 
   // Send message to Rasa and process Gemini AI response
