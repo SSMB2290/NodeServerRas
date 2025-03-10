@@ -77,9 +77,9 @@ const Chatbot = () => {
     }
 
     // Format chat history for Gemini API
-    const formattedChatHistory = previousChats
-      .map(chat => `User: ${chat.user}\nBot: ${chat.bot}`)
-      .join("\n") || "No previous conversation.";
+    const formattedChatHistory = previousChats.length > 0
+  ? previousChats.join("\n")  // Just list the bot responses
+  : "No previous conversation.";
 
     // Detect greeting queries
     const lowerQuery = userQuery.toLowerCase();
