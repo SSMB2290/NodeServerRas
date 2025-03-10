@@ -81,6 +81,8 @@ const Chatbot = () => {
   ? previousChats.join("\n")  // Just list the bot responses
   : "No previous conversation.";
 
+    console.log(formattedChatHistory);
+
     // Detect greeting queries
     const lowerQuery = userQuery.toLowerCase();
     const isGreeting = ["hi", "hello", "hey"].some(greet => lowerQuery.includes(greet));
