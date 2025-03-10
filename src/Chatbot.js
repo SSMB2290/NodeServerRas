@@ -229,7 +229,7 @@ ${additionalContext}
     }
 
     try {
-      const rasaResponse = await fetch("http://localhost:5005/webhooks/rest/webhook", {
+      const rasaResponse = await fetch("https://ajay.loca.lt/webhooks/rest/webhook", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ sender: "user", message: userMessage }),
