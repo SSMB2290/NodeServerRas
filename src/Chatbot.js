@@ -49,61 +49,72 @@ const Chatbot = () => {
   };
 
   // Generate response using Gemini AI
-  const generateTechZiteResponse = async (userQuery, additionalContext) => {
-   
-    if (!GEMINI_API_KEY) return "⚠️ API key missing.";
+  // Global chat history (stores last 10 messages per user)
+const chatHistory = new Map(); // Stores user_id -> [messages array]
 
-    // const finalPrompt = `
-    //   You are TechZiteBot, an assistant for TechZite 2025.
-    //   User Query: ${userQuery}
-    //   Context: ${additionalContext}
-    //   User Info: ${userDetails ? `Name: ${userDetails.name}, Events: ${userDetails.events.join(", ")}` : "Unknown"}
-    // `;
+const generateTechZiteResponse = async (userQuery, additionalContext, userDetails) => {
+  if (!GEMINI_API_KEY) return "⚠️ API key missing.";
 
-    const finalPrompt = `
-  You are TechZiteBot, an assistant for TechZite 2025.
-  User Query: ${userQuery}
-  Context: ${additionalContext}
-User Info: ${userDetails?.name 
-  ? `Name: ${userDetails.name}, Teckzite ID: ${userDetails.teckzite_id}, Events: ${userDetails.events?.join(", ")}` 
-  : "Unknown"}
-`;
+  // Fetch previous chat history (last 10 messages)
+  const user_id = userDetails?.teckzite_id || "unknown_user";
+  if (!chatHistory.has(user_id)) {
+    chatHistory.set(user_id, []);
+  }
 
-console.log(finalPrompt);
+  let previousChats = chatHistory.get(user_id);
+  if (previousChats.length > 10) {
+    previousChats = previousChats.slice(-10); // Keep only the last 10 messages
+  }
 
-  //  console.log(userDetails);
-    try {
-      const response = await fetch(
-        `https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`,
-        {
-          method: "POST",
-          headers: { 
-            "Content-Type": "application/json" 
-          },
-          body: JSON.stringify({
-            contents: [{ role: "user", parts: [{ text: finalPrompt }] }]
-          }),
-        }
-      );
+  // Format chat history
+  const formattedChatHistory = previousChats.map(chat => `User: ${chat.user}\nBot: ${chat.bot}`).join("\n");
 
-      
-      
+  // Prevent bot from unnecessarily stating user's name unless explicitly asked
+  const userInfo = userQuery.toLowerCase().includes("hi") || userQuery.toLowerCase().includes("hello") || userQuery.toLowerCase().includes("what's my name")
+    ? `Name: ${userDetails.name}, Teckzite ID: ${userDetails.teckzite_id}, Events: ${userDetails.events?.join(", ")}`
+    : `Teckzite ID: ${userDetails.teckzite_id}, Events: ${userDetails.events?.join(", ")}`;
 
-      const data = await response.json();
-      console.log(data);
-      const geminiResponse = data?.candidates?.[0]?.content?.parts?.[0]?.text || "🤖 No meaningful response.";
+  // Construct the final prompt for Gemini API
+  const finalPrompt = `
+    You are TechZiteBot, an assistant for TechZite 2025.
+    User Query: ${userQuery}
+    Context: ${additionalContext}
+    Previous Chats: ${formattedChatHistory || "No previous conversation."}
+    User Info: ${userInfo}
+    
+    Remember: Do not reveal the user's name unless greeted or explicitly asked.
+  `;
 
-      // Remove markdown bold and italics
-      let formattedResponse = geminiResponse.replace(/(\*\*|\*)/g, "");
-      
-                  // Close the list properly
-      
-      return formattedResponse;
-      
-    } catch (error) {
-      return `⚠️ Error: ${error.message}`;
-    }
-  };
+  console.log(finalPrompt);
+
+  try {
+    const response = await fetch(
+      `https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          contents: [{ role: "user", parts: [{ text: finalPrompt }] }]
+        }),
+      }
+    );
+
+    const data = await response.json();
+    console.log(data);
+    const geminiResponse = data?.candidates?.[0]?.content?.parts?.[0]?.text || "🤖 No meaningful response.";
+
+    // Remove markdown bold and italics from response
+    let formattedResponse = geminiResponse.replace(/(\*\*|\*)/g, "");
+
+    // Store chat in history (keep last 10 chats per user)
+    previousChats.push({ user: userQuery, bot: formattedResponse });
+    chatHistory.set(user_id, previousChats);
+
+    return formattedResponse;
+  } catch (error) {
+    return `⚠️ Error: ${error.message}`;
+  }
+};
 
   // Send message to Rasa and process Gemini AI response
   const sendMessage = async (message) => {
