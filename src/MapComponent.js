@@ -25,8 +25,6 @@ const locations = [
   { id: 8, name: "Game Stalls", coords: [16.7872, 80.8440] }, // Near student activity center
   { id: 9, name: "Library", coords: [16.7885, 80.8470] } // RGUKT Central Library
 ];
-
-
 const MapComponent = () => {
   const navigate = useNavigate(); // Initialize useNavigate for navigation
 
@@ -39,7 +37,7 @@ const MapComponent = () => {
     <div style={styles.container}>
       <h2 style={styles.header}>RGUKT Tech Fest Map</h2>
 
-      <MapContainer center={[16.7870, 80.8460]} zoom={16} style={styles.map}>
+      <MapContainer center={[16.7870, 80.8460]} zoom={17} style={styles.map}>
         <TileLayer
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
@@ -91,7 +89,7 @@ const styles = {
   }
 ,  
   map: {
-    height: "calc(100% - 60px)", // Adjusting map to fill available space
+    height: "calc(100% - 120px)", // Adjusting map to fill available space
     width: "100%",
     borderRadius: "10px",
   },
