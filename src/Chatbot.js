@@ -48,7 +48,8 @@ const Chatbot = () => {
     }
   };
 // Global chat history (stores last 10 messages per user)
-const chatHistory = new Map(); // Stores user_id -> [messages array]
+// Global chat history (stores last 10 messages per user)
+const chatHistory = new Map(); // Maps user_id -> [messages array]
 
 const generateTechZiteResponse = async (userQuery, additionalContext, userDetails) => {
   if (!GEMINI_API_KEY) return "⚠️ API key missing.";
@@ -56,46 +57,47 @@ const generateTechZiteResponse = async (userQuery, additionalContext, userDetail
   // Debugging: Check what userDetails actually contains
   console.log("🔍 Debug: Received userDetails ->", userDetails);
 
-  // Ensure userDetails exists and contains teckzite_id
-  let user_id = userDetails?.teckzite_id;
-  
-  if (!user_id) {
-    console.warn("⚠️ No TeckZite ID found. Treating user as not logged in.");
-    user_id = "unknown_user";
-  }
+  // Extract user ID (or treat as "not logged in")
+  const user_id = userDetails?.teckzite_id || "unknown_user";
 
-  // Initialize chat history for the user if not present
+  // Ensure user-specific chat history exists
   if (!chatHistory.has(user_id)) {
     chatHistory.set(user_id, []);
   }
 
-  // Get previous chats and limit to last 10 messages
+  // Get previous chats and trim to the last 10 messages
   let previousChats = chatHistory.get(user_id);
   if (previousChats.length > 10) {
     previousChats = previousChats.slice(-10);
-    chatHistory.set(user_id, previousChats); // Update trimmed history
+    chatHistory.set(user_id, previousChats);
   }
 
-  // If same query exists in chat history, return the same response
-  const lastUserMessage = previousChats.length > 0 ? previousChats[previousChats.length - 1].user : "";
-  if (lastUserMessage.toLowerCase() === userQuery.toLowerCase()) {
-    return previousChats[previousChats.length - 1].bot;
-  }
+  // Format chat history for context
+  const formattedChatHistory = previousChats
+    .map(chat => `User: ${chat.user}\nBot: ${chat.bot}`)
+    .join("\n") || "No previous conversation.";
+
+  // Handle greeting (Hi, Hello, Hey, etc.)
+  const lowerQuery = userQuery.toLowerCase();
+  const isGreeting = ["hi", "hello", "hey"].some(greet => lowerQuery.includes(greet));
 
   // Determine correct greeting response
-  const lowerQuery = userQuery.toLowerCase();
-  const isGreeting = lowerQuery.includes("hi") || lowerQuery.includes("hello") || lowerQuery.includes("hey");
-  
-  const user_teckzite_id = userDetails?.teckzite_id 
-    ? `Hi ${userDetails.teckzite_id}, I am here to assist you!`
-    : "Sorry, you are not logged in.";
+  let greetingResponse;
+  if (userDetails?.teckzite_id) {
+    greetingResponse = `Hi ${userDetails.teckzite_id}, I am here to assist you!`;
+  } else {
+    greetingResponse = "Sorry, you are not logged in.";
+  }
 
+  // If greeting exists in history, return the same response
   if (isGreeting) {
-    // Store response in chat history
-    previousChats.push({ user: userQuery, bot: user_teckzite_id });
+    const lastUserMessage = previousChats.length > 0 ? previousChats[previousChats.length - 1].user.toLowerCase() : "";
+    if (lastUserMessage === lowerQuery) {
+      return previousChats[previousChats.length - 1].bot; // Return cached response
+    }
+    previousChats.push({ user: userQuery, bot: greetingResponse });
     chatHistory.set(user_id, previousChats.slice(-10));
-
-    return user_teckzite_id;
+    return greetingResponse;
   }
 
   // Construct the final prompt for Gemini API
@@ -103,15 +105,15 @@ const generateTechZiteResponse = async (userQuery, additionalContext, userDetail
     You are TechZiteBot, an assistant for TechZite 2025.
     User Query: ${userQuery}
     Context: ${additionalContext}
-    Previous Chats: ${formattedChatHistory || "No previous conversation."}
+    Previous Chats: ${formattedChatHistory}
     User Info: ${userDetails?.teckzite_id 
       ? `Teckzite ID: ${userDetails.teckzite_id}, Events: ${userDetails.events?.join(", ") || "None"}`
       : "Sorry, you are not logged in."}
 
     Instructions:
-    - Always greet the user with "Hi [TeckZite ID]" if logged in.
-    - If TeckZite ID is missing, say "Sorry, you are not logged in."
-    - If the same query was asked before, return the same response.
+    - If the user greets, respond with: "Hi TZK250799, I am here to assist you!" (or "Sorry, you are not logged in." if missing).
+    - If the same query was asked before, return the same response from history.
+    - Avoid unnecessary name repetition.
   `;
 
   console.log("🔹 Final Prompt Sent to Gemini:\n", finalPrompt);
@@ -139,7 +141,7 @@ const generateTechZiteResponse = async (userQuery, additionalContext, userDetail
 
     // Store chat in history (keep last 10 chats per user)
     previousChats.push({ user: userQuery, bot: formattedResponse });
-    chatHistory.set(user_id, previousChats.slice(-10)); // Ensure history stays within 10 messages
+    chatHistory.set(user_id, previousChats.slice(-10));
 
     return formattedResponse;
   } catch (error) {
@@ -147,6 +149,7 @@ const generateTechZiteResponse = async (userQuery, additionalContext, userDetail
     return `⚠️ Error: ${error.message}`;
   }
 };
+
 
 
   // Send message to Rasa and process Gemini AI response
