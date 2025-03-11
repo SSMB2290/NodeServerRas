@@ -44,6 +44,7 @@ function Login() {
 
   return (
     <div style={styles.container}>
+    <div style={styles.titleContainer}>
       <motion.h1
         style={styles.title}
         animate={{ opacity: 1 }}
@@ -52,6 +53,7 @@ function Login() {
       >
         Teckzite Event Management Agent
       </motion.h1>
+      </div>
 
       <motion.form
         onSubmit={handleSubmit}
@@ -103,54 +105,159 @@ function Login() {
   );
 }
 
+
+
+
+
 const styles = {
-  container: {
-    display: "flex",
-    flexDirection: "column",
-    justifyContent: "center",
-    alignItems: "center",
+  pageContainer: {
+    width: "100vw",
     height: "100vh",
-    // backgroundColor: "#121212",
-    color: "#ffffff",
-    fontFamily: "Arial, sans-serif",
-  },
-  title: {
-    fontSize: "36px",
-    marginBottom: "20px",
-  },
-  form: {
     display: "flex",
     flexDirection: "column",
+    alignItems: "center",
+    justifyContent: "center",
+    color: "#fff",
+    padding: "10px",
+    position: "relative",
+    background: "none",
+    '@media (max-width: 768px)': {
+      padding: "5px", // Reduce padding for mobile
+    },
+  },
+  header: {
+    fontSize: "48px",
+    fontWeight: "bold",
+    marginBottom: "30px",
+    padding: "1px",
+    backgroundColor: "white",
+    WebkitBackgroundClip: "text",
+    color: "transparent",
+    textShadow: "0px 0px 30px rgb(235, 231, 240), 0px 0px 40px rgba(255, 105, 180, 0.8)",
+    letterSpacing: "2px",
+    textAlign: "center",
+    '@media (max-width: 768px)': {
+      fontSize: "24px", // Smaller font size for mobile
+      marginBottom: "15px", // Reduce margin for mobile
+    },
+  },
+  container: {
+    width: "70vw",
+    maxWidth: "1000px",
+    height: "80vh",
+    padding: "20px",
+    borderRadius: "15px",
+    backgroundColor: "#1a1a1a",
+    boxShadow: "0 0 15px rgba(20, 75, 138, 0.1)",
+    display: "flex",
+    flexDirection: "column",
+    position: "relative",
+    '@media (max-width: 768px)': {
+      width: "100vw", // Full width on mobile
+      height: "70vh", // 70% height on mobile
+      borderRadius: "10px", // Keep some border radius for a modern look
+      padding: "10px", // Reduce padding for mobile
+    },
+  },
+  buttonContainer: {
+    display: "flex",
+    flexWrap: "wrap",
     gap: "10px",
+    justifyContent: "center",
+    marginBottom: "15px",
+    '@media (max-width: 768px)': {
+      gap: "5px", // Reduce gap between buttons for mobile
+      marginBottom: "10px", // Reduce margin for mobile
+    },
+  },
+  quickButton: {
+    display: "flex",
+    alignItems: "center",
+    gap: "8px",
+    backgroundColor: "#6a11cb",
+    color: "white",
+    border: "none",
+    borderRadius: "8px",
+    padding: "10px 15px",
+    cursor: "pointer",
+    fontSize: "14px",
+    transition: "0.3s",
+    '@media (max-width: 768px)': {
+      padding: "6px 10px", // Reduce padding for mobile
+      fontSize: "12px", // Smaller font size for mobile
+      flex: "1 1 30%", // Allow three buttons in a line
+    },
+  },
+  chatBox: {
+    flex: 1,
+    overflowY: "auto",
+    border: "1px solid #555",
+    padding: "15px",
+    borderRadius: "10px",
+    backgroundColor: "#2a2a2a",
+    display: "flex",
+    flexDirection: "column",
+    '@media (max-width: 768px)': {
+      padding: "10px", // Reduce padding for mobile
+      height: "70%", // Set height to 70% of the container
+    },
+  },
+  message: {
+    padding: "10px",
+    borderRadius: "12px",
+    margin: "5px",
+    maxWidth: "70%",
+    wordWrap: "break-word",
+    '@media (max-width: 768px)': {
+      maxWidth: "90%", // Increase max-width for mobile to utilize more space
+    },
+  },
+  userMessage: {
+    alignSelf: "flex-end",
+    backgroundColor: "#2575fc",
+    color: "white",
+    textAlign: "right",
+  },
+  botMessage: {
+    alignSelf: "flex-start",
+    backgroundColor: "#444",
+    textAlign: "left",
   },
   inputContainer: {
     display: "flex",
-    flexDirection: "column",
-  },
-  label: {
-    fontSize: "14px",
-    marginBottom: "5px",
+    marginTop: "15px",
+    '@media (max-width: 768px)': {
+      marginTop: "10px", // Reduce margin for mobile
+    },
   },
   input: {
-    padding: "10px",
-    backgroundColor: "#2c2c2c",
-    color: "#ffffff",
-    border: "1px solid #555",
-    borderRadius: "5px",
-    width: "250px",
+    flex: 1,
+    padding: "12px",
+    border: "1px solid #ddd",
+    borderRadius: "8px",
+    backgroundColor: "#333",
+    color: "#fff",
+    fontSize: "16px",
+    '@media (max-width: 768px)': {
+      padding: "10px", // Reduce padding for mobile
+      fontSize: "14px", // Smaller font size for mobile
+    },
   },
   button: {
-    padding: "10px",
-    backgroundColor: "#4caf50",
-    color: "#ffffff",
+    padding: "12px 20px",
+    backgroundColor: "#6a11cb",
+    color: "white",
     border: "none",
-    borderRadius: "5px",
+    borderRadius: "8px",
+    marginLeft: "8px",
     cursor: "pointer",
+    transition: "0.3s",
+    '@media (max-width: 768px)': {
+      padding: "10px 15px", // Reduce padding for mobile
+      fontSize: "14px", // Smaller font size for mobile
+    },
   },
-  error: {
-    color: "red",
-    fontSize: "14px",
-  }
 };
+
 
 export default Login;
