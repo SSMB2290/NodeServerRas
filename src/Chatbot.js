@@ -16,7 +16,129 @@ const Chatbot = () => {
   const [isTyping, setIsTyping] = useState(false);
   const [showConfetti, setShowConfetti] = useState(false);
   const navigate = useNavigate();
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
 
+  // Function to update isMobile state on window resize
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth <= 768);
+      isMobile =window.innerWidth <= 768;
+    };
+
+    // Add event listener for window resize
+    window.addEventListener("resize", handleResize);});
+
+
+    const styles = {
+      pageContainer: {
+        width: isMobile ? "80vw" : "100vw",
+        height: "100vh",
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        justifyContent: "center",
+        color: "#fff",
+        padding: isMobile ? "15px" : "10px", // Reduce padding for mobile
+        position: "relative",
+        background: "none",
+      },
+      header: {
+        fontSize: isMobile ? "24px" : "48px", // Smaller font size for mobile
+        fontWeight: "bold",
+        marginBottom: isMobile ? "15px" : "30px", // Reduce margin for mobile
+        padding: "1px",
+        backgroundColor: "white",
+        WebkitBackgroundClip: "text",
+        color: "transparent",
+        textShadow: "0px 0px 30px rgb(235, 231, 240), 0px 0px 40px rgba(255, 105, 180, 0.8)",
+        letterSpacing: "2px",
+        textAlign: "center",
+      },
+      container: {
+        width: isMobile ? "95vw" : "70vw", // Full width on mobile, 70% on desktop
+        maxWidth: "1000px",
+        height: isMobile ? "70vh" : "80vh", // 70% height on mobile, 80% on desktop
+        padding: isMobile ? "10px" : "20px", // Reduce padding for mobile
+        borderRadius: isMobile ? "10px" : "15px", // Adjust border radius for mobile
+        backgroundColor: "#1a1a1a",
+        boxShadow: "0 0 15px rgba(20, 75, 138, 0.1)",
+        display: "flex",
+        flexDirection: "column",
+        position: "relative",
+      },
+      buttonContainer: {
+        display: "flex",
+        flexWrap: "wrap",
+        gap: isMobile ? "5px" : "10px", // Reduce gap between buttons for mobile
+        justifyContent: "center",
+        marginBottom: isMobile ? "10px" : "15px", // Reduce margin for mobile
+      },
+      quickButton: {
+        display: "flex",
+        alignItems: "center",
+        gap: "8px",
+        backgroundColor: "#6a11cb",
+        color: "white",
+        border: "none",
+        borderRadius: "8px",
+        padding: isMobile ? "6px 10px" : "10px 15px", // Reduce padding for mobile
+        cursor: "pointer",
+        fontSize: isMobile ? "12px" : "14px", // Smaller font size for mobile
+        flex: isMobile ? "1 1 30%" : "none", // Allow three buttons in a line on mobile
+      },
+      chatBox: {
+        flex: 1,
+        overflowY: "auto",
+        border: "1px solid #555",
+        padding: isMobile ? "10px" : "15px", // Reduce padding for mobile
+        borderRadius: "10px",
+        backgroundColor: "#2a2a2a",
+        display: "flex",
+        flexDirection: "column",
+      },
+      message: {
+        padding: "10px",
+        borderRadius: "12px",
+        margin: "5px",
+        maxWidth: isMobile ? "90%" : "70%", // Increase maxWidth for mobile
+        wordWrap: "break-word",
+      },
+      userMessage: {
+        alignSelf: "flex-end",
+        backgroundColor: "#2575fc",
+        color: "white",
+        textAlign: "right",
+      },
+      botMessage: {
+        alignSelf: "flex-start",
+        backgroundColor: "#444",
+        textAlign: "left",
+      },
+      inputContainer: {
+        display: "flex",
+        marginTop: isMobile ? "10px" : "15px", // Reduce margin for mobile
+      },
+      input: {
+        flex: 1,
+        padding: isMobile ? "10px" : "12px", // Reduce padding for mobile
+        border: "1px solid #ddd",
+        borderRadius: "8px",
+        backgroundColor: "#333",
+        color: "#fff",
+        fontSize: isMobile ? "14px" : "16px", // Smaller font size for mobile
+      },
+      button: {
+        padding: isMobile ? "10px 15px" : "12px 20px", // Reduce padding for mobile
+        backgroundColor: "#6a11cb",
+        color: "white",
+        border: "none",
+        borderRadius: "8px",
+        marginLeft: "8px",
+        cursor: "pointer",
+        transition: "0.3s",
+        fontSize: isMobile ? "14px" : "16px", // Smaller font size for mobile
+      },
+    };
   // Predefined quick action buttons
   const predefinedMessages = {
     Events: "What events are available for everyone?",
@@ -248,7 +370,7 @@ const Chatbot = () => {
     }
 
     try {
-      const rasaResponse = await fetch(" https://adaa-103-225-13-247.ngrok-free.app/webhooks/rest/webhook", {
+      const rasaResponse = await fetch("https://3056-103-225-13-247.ngrok-free.app/webhooks/rest/webhook", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ sender: "user", message: userMessage }),
@@ -320,115 +442,10 @@ const Chatbot = () => {
   );
 };
 
-const styles = {
-  pageContainer: {
-    width: "100vw",
-    height: "100vh",
-    display: "flex",
-    flexDirection: "column",
-    alignItems: "center",
-    justifyContent: "center",
-    color: "#fff",
-    padding: "10px",
-    position: "relative",
-    background: "none", // Removed background color
-  },
-  header: {
-    fontSize: "48px", // Increased font size for more prominence
-    fontWeight: "bold",
-    marginBottom: "30px", // Increased margin to give more space below the header
-    padding: "1px", // Increased padding for better balance
-    backgroundColor: "white",
-    WebkitBackgroundClip: "text",
-    color: "transparent",
-    textShadow: "0px 0px 30px rgb(235, 231, 240), 0px 0px 40px rgba(255, 105, 180, 0.8)", // More intense text shadow with an additional color
-    letterSpacing: "2px", // Slight letter spacing to make the text more stylish and prominent
-    textAlign: "center", // Center the text
-    // Optional: making the text uppercase for a bolder feel
-  },
-  container: {
-    width: "70vw", // Adjusted to 70% of the viewport width
-    maxWidth: "1000px", // Optional: You can set a max-width to prevent it from becoming too wide on large screens
-    height: "80vh",
-    padding: "20px",
-    borderRadius: "15px",
-    backgroundColor: "#1a1a1a",  // Lightened dark color to match with purple and white
-    boxShadow: "0 0 15px rgba(20, 75, 138, 0.1)",
-    display: "flex",
-    flexDirection: "column",
-    position: "relative",
-  },
-  buttonContainer: {
-    display: "flex",
-    flexWrap: "wrap",
-    gap: "10px",
-    justifyContent: "center",
-    marginBottom: "15px",
-  },
-  quickButton: {
-    display: "flex",
-    alignItems: "center",
-    gap: "8px",
-    backgroundColor: "#6a11cb",
-    color: "white",
-    border: "none",
-    borderRadius: "8px",
-    padding: "10px 15px",
-    cursor: "pointer",
-    fontSize: "14px",
-    transition: "0.3s",
-  },
-  chatBox: {
-    flex: 1,
-    overflowY: "auto",
-    border: "1px solid #555",
-    padding: "15px",
-    borderRadius: "10px",
-    backgroundColor: "#2a2a2a",
-    display: "flex",
-    flexDirection: "column",
-  },
-  message: {
-    padding: "10px",
-    borderRadius: "12px",
-    margin: "5px",
-    maxWidth: "70%", // Restrict message width
-    wordWrap: "break-word",
-  },
-  userMessage: {
-    alignSelf: "flex-end",
-    backgroundColor: "#2575fc",
-    color: "white",
-    textAlign: "right",
-  },
-  botMessage: {
-    alignSelf: "flex-start",
-    backgroundColor: "#444",
-    textAlign: "left",
-  },
-  inputContainer: {
-    display: "flex",
-    marginTop: "15px",
-  },
-  input: {
-    flex: 1,
-    padding: "12px",
-    border: "1px solid #ddd",
-    borderRadius: "8px",
-    backgroundColor: "#333",
-    color: "#fff",
-    fontSize: "16px",
-  },
-  button: {
-    padding: "12px 20px",
-    backgroundColor: "#6a11cb",
-    color: "white",
-    border: "none",
-    borderRadius: "8px",
-    marginLeft: "8px",
-    cursor: "pointer",
-    transition: "0.3s",
-  },
-};
+
+
+
+
+
 
 export default Chatbot;
